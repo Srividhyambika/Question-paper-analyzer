@@ -67,5 +67,5 @@ MIT
 
 ## Contributors
 
-Gubba Sri Vidyambika
+Gubba Sri Vidyambika, 
 Anoushka Karra
