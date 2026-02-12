@@ -59,7 +59,3 @@ MIT
 
 Gubba Sri Vidyambika, 
 Anoushka Karra
-## Contributors
-
-Gubba Sri Vidyambika, 
-Anoushka Karra
