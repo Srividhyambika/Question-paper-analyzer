@@ -1,5 +1,6 @@
+import api from '../api/axiosConfig';
 import React, { useState } from 'react';
-import axios from 'axios';
+// Removed unused standard axios import
 import { Upload, FileText, CheckCircle, Loader2 } from 'lucide-react';
 
 const FileUpload = () => {
@@ -11,31 +12,42 @@ const FileUpload = () => {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState('');
 
+  // --- ADDED THIS FUNCTION ---
   const handleFileChange = (e) => {
+    // This updates the specific key (e.g., 'syllabus') with the selected file
     setFiles({ ...files, [e.target.name]: e.target.files[0] });
   };
 
   const handleUpload = async (e) => {
     e.preventDefault();
+    
     if (!files.questionPaper || !files.syllabus || !files.textbook) {
-      alert("Please upload all three required documents.");
+      setStatus("Please upload all three required documents.");
       return;
     }
 
     setLoading(true);
+    setStatus('Processing PDFs...'); 
+
     const formData = new FormData();
     formData.append('questionPaper', files.questionPaper);
     formData.append('syllabus', files.syllabus);
     formData.append('textbook', files.textbook);
 
     try {
-      // Points to your Express server (Week 1 Step 4)
-      const res = await axios.post('http://localhost:5000/api/upload', formData);
-      setStatus('Upload successful! Text extracted.');
-      console.log(res.data);
+      const res = await api.post('/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      setStatus('Upload successful! Text extracted and saved to MongoDB.');
+      console.log("Server Response:", res.data);
+
     } catch (err) {
-      setStatus('Error uploading files.');
-      console.error(err);
+      const errorMessage = err.response?.data?.error || 'Error uploading files.';
+      setStatus(errorMessage);
+      console.error("Upload Error:", err);
     } finally {
       setLoading(false);
     }
@@ -68,7 +80,14 @@ const FileUpload = () => {
                     </>
                   )}
                 </div>
-                <input type="file" name={item.name} className="hidden" accept=".pdf" onChange={handleFileChange} />
+                {/* Notice onChange calls handleFileChange now */}
+                <input 
+                  type="file" 
+                  name={item.name} 
+                  className="hidden" 
+                  accept=".pdf" 
+                  onChange={handleFileChange} 
+                />
               </label>
             </div>
           </div>
