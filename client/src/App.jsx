@@ -1,19 +1,56 @@
+import { Routes, Route } from "react-router-dom";
+import { useEffect, useRef } from "react";
+import { useAuth } from "./store/useAuth";
+import { startVisit, endVisit } from "./services/api";
+import Home from "./pages/Home";
+import Analysis from "./pages/Analysis";
+import History from "./pages/History";
+import Compare from "./pages/Compare";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import AdminDashboard from "./pages/AdminDashboard";
+import NotFound from "./pages/NotFound";
+import Navbar from "./components/Navbar";
+import { ProtectedRoute, AdminRoute } from "./components/ProtectedRoute";
 
-import './App.css'
-import FileUpload from './components/FileUpload';
+export default function App() {
+  const { user } = useAuth();
+  const visitIdRef = useRef(null);
 
-function App() {
+  // Visitor tracking — fires on every session
+  useEffect(() => {
+    startVisit(user?.id || null)
+      .then((r) => { visitIdRef.current = r.data.visitId; })
+      .catch(() => {});
+
+    return () => {
+      if (visitIdRef.current) {
+        endVisit(visitIdRef.current).catch(() => {});
+      }
+    };
+  }, []);
+
   return (
-    <div className="min-h-screen bg-slate-100 py-12">
-      <header className="text-center mb-10">
-        <h1 className="text-4xl font-extrabold text-slate-900">Exam PYQ Analyzer</h1>
-        <p className="text-slate-500 mt-2">Upload your materials to check syllabus coverage and complexity.</p>
-      </header>
-      <main>
-        <FileUpload />
+    <div className="min-h-screen bg-slate-50">
+      <Navbar />
+      <main className="max-w-6xl mx-auto px-4 py-8">
+        <Routes>
+          {/* Public */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+
+          {/* Protected */}
+          <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+          <Route path="/analysis/:paperId" element={<ProtectedRoute><Analysis /></ProtectedRoute>} />
+          <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
+          <Route path="/compare" element={<ProtectedRoute><Compare /></ProtectedRoute>} />
+
+          {/* Admin only */}
+          <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+
+          <Route path="*" element={<NotFound />} />
+        </Routes>
       </main>
     </div>
   );
 }
-
-export default App;
