@@ -14,3 +14,8 @@ server/uploads/*
 client/.env
 client/node_modules/
 client/dist/
+
+# Lock files
+package-lock.json
+client/package-lock.json
+server/package-lock.json
