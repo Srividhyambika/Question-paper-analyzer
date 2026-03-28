@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { uploadPDFs, runAnalysis } from "../services/api";
+import { uploadPDFs, runAnalysis, getAnalysisStatus } from "../services/api";
 import UploadZone from "../components/upload/UploadZone";
 import UploadProgress from "../components/upload/UploadProgress";
 import { Button } from "../components/ui/button";
@@ -23,30 +23,45 @@ export default function Home() {
     files.questionPaper && files.syllabus && files.textbooks.length > 0;
 
   const handleSubmit = async () => {
-    if (!allFilesReady) return;
-    setStatus("uploading");
-    setError("");
+  if (!allFilesReady) return;
+  setStatus("uploading");
+  setError("");
 
-    try {
-      const formData = new FormData();
-      formData.append("questionPaper", files.questionPaper);
-      formData.append("syllabus", files.syllabus);
-      files.textbooks.forEach((f) => formData.append("textbooks", f));
-      if (meta.title) formData.append("title", meta.title);
-      if (meta.year) formData.append("year", meta.year);
-      if (meta.subject) formData.append("subject", meta.subject);
+  try {
+    const formData = new FormData();
+    formData.append("questionPaper", files.questionPaper);
+    formData.append("syllabus", files.syllabus);
+    files.textbooks.forEach((f) => formData.append("textbooks", f));
+    if (meta.title) formData.append("title", meta.title);
+    if (meta.year) formData.append("year", meta.year);
+    if (meta.subject) formData.append("subject", meta.subject);
 
-      const { data } = await uploadPDFs(formData, setProgress);
-      setStatus("processing");
+    const { data } = await uploadPDFs(formData, setProgress);
+    setStatus("processing");
 
-      await runAnalysis(data.paperId);
-      setStatus("done");
-      navigate(`/analysis/${data.paperId}`);
-    } catch (err) {
-      setStatus("error");
-      setError(err.response?.data?.message || "Something went wrong.");
-    }
-  };
+    await runAnalysis(data.paperId);
+
+    // Poll status until completed instead of navigating immediately
+    const pollStatus = async (paperId) => {
+      const { data: statusData } = await getAnalysisStatus(paperId);
+      if (statusData.status === "completed") {
+        setStatus("done");
+        navigate(`/analysis/${paperId}`);
+      } else if (statusData.status === "failed") {
+        setStatus("error");
+        setError("Analysis failed. Please try again.");
+      } else {
+        setTimeout(() => pollStatus(paperId), 3000);
+      }
+    };
+
+    pollStatus(data.paperId);
+
+  } catch (err) {
+    setStatus("error");
+    setError(err.response?.data?.message || "Something went wrong.");
+  }
+};
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
