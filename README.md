@@ -8,9 +8,9 @@ An AI-powered exam question paper analyzer built on the MERN stack. Upload a que
 
 | Phase | Description | Status |
 |-------|-------------|--------|
-| Phase 1 | Full Stack — MERN setup, PDF upload & parsing, authentication, React UI | ✅ Complete |
-| Phase 2 | LLM Integration — Gemini API, syllabus matching, difficulty & Bloom's analysis | 🔄 In Progress |
-| Phase 3 | AI Agent — LangChain.js agent, conversational interface, year-over-year comparison | ⏳ Upcoming |
+| Phase 1 | Full Stack — MERN setup, PDF upload & parsing, authentication, React UI | Complete |
+| Phase 2 | LLM Integration — Gemini API, syllabus matching, difficulty & Bloom's analysis | In Progress |
+| Phase 3 | AI Agent — LangChain.js agent, conversational interface, year-over-year comparison | Upcoming |
 
 ---
 
@@ -169,27 +169,6 @@ Frontend runs on `http://localhost:5173`
 
 ---
 
-## Environment Variables
-
-### `server/.env`
-
-```env
-PORT=5001
-MONGO_URI=mongodb://localhost:27017/exam-analyzer
-GEMINI_API_KEY=your_gemini_api_key_here
-JWT_SECRET=your_super_secret_key_change_this_in_production
-NODE_ENV=development
-CLIENT_URL=http://localhost:5173
-```
-
-### `client/.env`
-
-```env
-VITE_API_URL=http://localhost:5001/api
-```
-
----
-
 ## API Endpoints
 
 ### Auth
@@ -281,3 +260,8 @@ analysisresults    — aggregated summary (populated in Phase 2)
 - Cognitive complexity scoring (1–10) with thinking type classification
 - Textbook RAG with MongoDB Atlas Vector Search
 - Full results dashboard with Bloom's pie chart and difficulty bar chart
+
+---
+
+## Contributers
+Anoushka Karra, Srividhyambika Gubba

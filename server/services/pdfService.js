@@ -80,18 +80,21 @@ const parseQuestionPaper = async (filePath) => {
 };
 
 // ─── Marks Extractor ─────────────────────────────────────────────────────────
-// Looks for patterns like [5], (5), 5 marks, 5M within a question block
 
 const extractMarks = (text) => {
   const patterns = [
-    /\[(\d+)\s*(?:marks?)?\]/i,
-    /\((\d+)\s*(?:marks?)?\)/i,
-    /(\d+)\s*marks?/i,
-    /(\d+)\s*M\b/i,
+    /\b(\d{1,2})\s*(?:marks?|M|m)\b/i,     // 5 marks, 5M
+    /\[(\d{1,2})\]/,                          // [5]
+    /\((\d{1,2})\)\s*$/m,                     // (5) at end of line
+    /L\d\s+(\d{1,2})\s*$/m,                   // L2 6 (your PDF format)
+    /(\d{1,2})\s*$/m,                          // trailing number on last line
   ];
   for (const pattern of patterns) {
     const match = text.match(pattern);
-    if (match) return parseInt(match[1]);
+    if (match) {
+      const val = parseInt(match[1]);
+      if (val > 0 && val <= 25) return val;   // sanity check — ignore 0 and >25
+    }
   }
   return 0;
 };
