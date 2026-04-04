@@ -2,8 +2,8 @@ const Paper = require("../models/Paper");
 const Question = require("../models/Question");
 const AnalysisResult = require("../models/AnalysisResult");
 const Syllabus = require("../models/Syllabus");
-const { parseQuestionPaper } = require("../services/pdfService");
 const { analyzeQuestion, generateSummary } = require("../services/geminiService");
+const { parseQuestionPaper, deleteFile } = require("../services/pdfService");
 
 // POST /api/analysis/run/:paperId
 const runAnalysis = async (req, res, next) => {
@@ -90,6 +90,10 @@ const runAnalysis = async (req, res, next) => {
         console.error("Summary generation failed:", err.message);
       }
 
+      deleteFile(paper.questionPaperPath);
+      deleteFile(paper.syllabusPath);
+      paper.textbookPaths?.forEach((p) => deleteFile(p));
+      
       await Paper.findByIdAndUpdate(paperId, { status: "completed" });
       console.log(`Analysis complete for paper ${paperId}`);
     };
