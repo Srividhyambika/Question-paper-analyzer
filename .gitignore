@@ -1,24 +1,60 @@
-# Dependency directories (VERY IMPORTANT)
-node_modules/
-
-# Root
+# ─── OS ───────────────────────────────────────────────────────────────────────
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
 
-# Server
-server/.env
-server/node_modules/
-server/uploads/*
-!server/uploads/.gitkeep
+# ─── Node ─────────────────────────────────────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
 
-# Client
-client/.env
-client/node_modules/
-client/dist/
-
-# Lock files
+# ─── Lock files ───────────────────────────────────────────────────────────────
 package-lock.json
 client/package-lock.json
 server/package-lock.json
 
-# Test files
+# ─── Environment variables ────────────────────────────────────────────────────
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+server/.env
+client/.env
+
+# ─── Build output ─────────────────────────────────────────────────────────────
+client/dist/
+client/dist-ssr/
+build/
+
+# ─── Uploads (PDFs uploaded by users) ────────────────────────────────────────
+server/uploads/*
+!server/uploads/.gitkeep
+
+# ─── Logs ─────────────────────────────────────────────────────────────────────
+logs/
+*.log
+
+# ─── Editor ───────────────────────────────────────────────────────────────────
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ─── Test files ───────────────────────────────────────────────────────────────
 server/testGemini.js
+
+# ─── Misc ─────────────────────────────────────────────────────────────────────
+*.local
+.cache/
