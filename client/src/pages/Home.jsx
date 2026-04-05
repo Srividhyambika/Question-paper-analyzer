@@ -6,6 +6,7 @@ import UploadProgress from "../components/upload/UploadProgress";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import toast from "react-hot-toast";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -45,7 +46,7 @@ export default function Home() {
     const pollStatus = async (paperId) => {
       const { data: statusData } = await getAnalysisStatus(paperId);
       if (statusData.status === "completed") {
-        setStatus("done");
+        toast.success("Analysis complete!");
         navigate(`/analysis/${paperId}`);
       } else if (statusData.status === "failed") {
         setStatus("error");
@@ -58,16 +59,15 @@ export default function Home() {
     pollStatus(data.paperId);
 
   } catch (err) {
-    setStatus("error");
-    setError(err.response?.data?.message || "Something went wrong.");
+    toast.error(err.response?.data?.message || "Upload failed.");
   }
 };
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-800">Upload Exam Paper</h1>
-        <p className="text-slate-500 text-sm mt-1">
+        <h1 className="text-2xl font-bold text-slate-800 dark:text-white">Upload Exam Paper</h1>
+        <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
           Upload your question paper, syllabus, and textbooks to begin analysis.
         </p>
       </div>
@@ -75,7 +75,7 @@ export default function Home() {
       {/* Metadata */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Paper Details</CardTitle>
+          <CardTitle className="text-base text-slate-800 dark:text-white">Paper Details</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-3 gap-3">
           <Input
