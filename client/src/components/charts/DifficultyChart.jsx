@@ -5,7 +5,7 @@ const COLORS = { easy: "#10b981", medium: "#f59e0b", hard: "#ef4444" };
 
 export default function DifficultyChart({ data }) {
   if (!data) return null;
-
+  
   const chartData = [
     { name: "Easy", value: data.easy, color: COLORS.easy },
     { name: "Medium", value: data.medium, color: COLORS.medium },
