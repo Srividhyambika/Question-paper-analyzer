@@ -174,4 +174,16 @@ const parseTextbook = async (filePath, title = "Textbook") => {
   return { title, chunks };
 };
 
-module.exports = { extractText, parseQuestionPaper, parseSyllabus, parseTextbook };
+
+const deleteFile = (filePath) => {
+  try {
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+      console.log(`Deleted: ${filePath}`);
+    }
+  } catch (err) {
+    console.error(`Failed to delete ${filePath}:`, err.message);
+  }
+};
+
+module.exports = { extractText, parseQuestionPaper, parseSyllabus, parseTextbook, deleteFile };
