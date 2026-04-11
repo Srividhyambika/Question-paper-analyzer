@@ -43,7 +43,7 @@ const register = async (req, res, next) => {
 
     res.status(201).json({
       token: generateToken(user._id, user.role),
-      user: { id: user._id, username: user.username, role: user.role },
+      user: { id: user._id, username: user.username, role: user.role, avatar: user.avatar },
       passwordStrength: classifyStrength(password),
     });
   } catch (err) {
@@ -76,7 +76,7 @@ const login = async (req, res, next) => {
 
     res.json({
       token: generateToken(user._id, user.role),
-      user: { id: user._id, username: user.username, role: user.role },
+      user: { id: user._id, username: user.username, role: user.role, avatar: user.avatar },
     });
   } catch (err) {
     next(err);
@@ -85,7 +85,47 @@ const login = async (req, res, next) => {
 
 // GET /api/auth/me
 const getMe = async (req, res) => {
-  res.json({ id: req.user._id, username: req.user.username, role: req.user.role });
+  res.json({ 
+    id: req.user._id, 
+    username: req.user.username, 
+    role: req.user.role,
+    avatar: req.user.avatar,
+  });
 };
 
-module.exports = { register, login, getMe };
+// PATCH /api/auth/profile
+const updateProfile = async (req, res, next) => {
+  try {
+    const { username, avatar } = req.body;
+
+    if (username) {
+      const existing = await User.findOne({ username, _id: { $ne: req.user._id } });
+      if (existing) {
+        res.status(400);
+        return next(new Error("Username already taken."));
+      }
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      {
+        ...(username && { username }),
+        ...(avatar !== undefined && { avatar }),
+      },
+      { new: true }
+    ).select("-password");
+
+    console.log("Updated user:", user.username, user.avatar);
+
+    res.json({
+      id: user._id,
+      username: user.username,
+      role: user.role,
+      avatar: user.avatar,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { register, login, getMe, updateProfile };
