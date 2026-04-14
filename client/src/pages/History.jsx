@@ -4,6 +4,8 @@ import { getUploadHistory, deletePaper } from "../services/api";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import { Trash2, ExternalLink } from "lucide-react";
+import toast from "react-hot-toast";
+import { Loader2 } from "lucide-react";
 
 const statusColor = {
   uploaded: "secondary",
@@ -22,29 +24,38 @@ export default function History() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: deletePaper,
-    onSuccess: () => queryClient.invalidateQueries(["history"]),
-  });
+  mutationFn: deletePaper,
+  onSuccess: () => {
+    queryClient.invalidateQueries(["history"]);
+    toast.success("Paper deleted.");
+  },
+  onError: () => toast.error("Failed to delete paper."),
+});
 
-  if (isLoading) return <div className="text-slate-500 py-12 text-center">Loading...</div>;
 
+  if (isLoading) return (
+  <div className="flex flex-col items-center justify-center py-20 gap-3">
+    <Loader2 size={28} className="animate-spin text-primary" />
+    <p className="text-sm text-muted-foreground">Loading your papers...</p>
+  </div>
+);
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold text-slate-800">Upload History</h1>
+      <h1 className="text-2xl font-bold text-slate-800 dark:text-white">Upload History</h1>
 
       {data?.length === 0 && (
-        <p className="text-slate-400 text-sm">No papers uploaded yet.</p>
+        <p className="text-slate-400 dark:text-slate-500 text-sm ">No papers uploaded yet.</p>
       )}
 
       <div className="space-y-2">
         {data?.map((paper) => (
           <div
-            key={paper._id}
-            className="flex items-center justify-between bg-white border border-slate-200 rounded-lg px-4 py-3"
-          >
+  key={paper._id}
+  className="flex items-center justify-between bg-card border border-border rounded-lg px-4 py-3 neon-card"
+>
             <div>
-              <p className="font-medium text-slate-800 text-sm">{paper.title}</p>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="font-medium text-slate-800 dark:text-slate-500 text-sm">{paper.title}</p>
+              <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
                 {paper.subject} {paper.year && `· ${paper.year}`} · {paper.totalQuestions} questions
                 · {new Date(paper.createdAt).toLocaleDateString()}
               </p>
