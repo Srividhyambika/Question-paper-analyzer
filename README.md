@@ -211,26 +211,6 @@ Frontend runs on `http://localhost:5173`
 
 ---
 
-## Environment Variables
-
-### `server/.env`
-```env
-PORT=5001
-MONGO_URI=mongodb://localhost:27017/exam-analyzer
-GROQ_API_KEY=your_groq_api_key_here
-GEMINI_API_KEY=your_gemini_api_key_here
-JWT_SECRET=your_super_secret_key_change_this_in_production
-NODE_ENV=development
-CLIENT_URL=http://localhost:5173
-```
-
-### `client/.env`
-```env
-VITE_API_URL=http://localhost:5001/api
-```
-
----
-
 ## API Endpoints
 
 ### Auth
