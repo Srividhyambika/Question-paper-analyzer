@@ -1,4 +1,4 @@
-# ─── OS ───────────────────────────────────────────────────────────────────────
+# ─── OS 
 .DS_Store
 .DS_Store?
 ._*
@@ -7,7 +7,7 @@
 ehthumbs.db
 Thumbs.db
 
-# ─── Node ─────────────────────────────────────────────────────────────────────
+# ─── Node 
 node_modules/
 npm-debug.log*
 yarn-debug.log*
@@ -15,12 +15,12 @@ yarn-error.log*
 lerna-debug.log*
 .pnpm-debug.log*
 
-# ─── Lock files ───────────────────────────────────────────────────────────────
+# ─── Lock files 
 package-lock.json
 client/package-lock.json
 server/package-lock.json
 
-# ─── Environment variables ────────────────────────────────────────────────────
+# ─── Environment variables 
 .env
 .env.local
 .env.development
@@ -29,20 +29,20 @@ server/package-lock.json
 server/.env
 client/.env
 
-# ─── Build output ─────────────────────────────────────────────────────────────
+# ─── Build output 
 client/dist/
 client/dist-ssr/
 build/
 
-# ─── Uploads (PDFs uploaded by users) ────────────────────────────────────────
+# ─── Uploads (PDFs uploaded by users) 
 server/uploads/*
 !server/uploads/.gitkeep
 
-# ─── Logs ─────────────────────────────────────────────────────────────────────
+# ─── Logs 
 logs/
 *.log
 
-# ─── Editor ───────────────────────────────────────────────────────────────────
+# ─── Editor 
 .vscode/*
 !.vscode/extensions.json
 .idea/
@@ -52,9 +52,9 @@ logs/
 *.sln
 *.sw?
 
-# ─── Test files ───────────────────────────────────────────────────────────────
+# ─── Test files 
 server/testGemini.js
 
-# ─── Misc ─────────────────────────────────────────────────────────────────────
+# ─── Misc
 *.local
 .cache/
