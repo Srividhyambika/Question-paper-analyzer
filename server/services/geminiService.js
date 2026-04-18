@@ -3,6 +3,7 @@ const Groq = require("groq-sdk");
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const MODEL = "llama-3.3-70b-versatile";
+const { sanitizeText } = require("../utils/sanitize");
 
 // ─── Helper: strip markdown code fences from JSON responses ──────────────────
 const cleanJSON = (text) => {
@@ -30,6 +31,7 @@ const withRetry = async (fn, retries = 3, delayMs = 15000) => {
 // Returns structured JSON with all analysis fields in one call
 
 const analyzeQuestion = async (questionText, syllabusTopics, questionNumber) => {
+  const cleanText = sanitizeText(questionText);
   const prompt = `
 You are an expert academic analyzer. Analyze the following exam question and return ONLY a valid JSON object with no extra text, no markdown, no explanation.
 
@@ -171,4 +173,172 @@ Be concise and practical. No markdown.
   };
 };
 
-module.exports = { analyzeQuestion, generateSummary };
+// ─── GenAI: Topic-wise Summary ────────────────────────────────────────────────
+const generateTopicSummary = async (questions, analysisResult) => {
+  const topicData = questions.reduce((acc, q) => {
+    const topic = q.syllabusMatch?.topic || "General";
+    if (!acc[topic]) acc[topic] = { questions: [], difficulty: [], blooms: [] };
+    acc[topic].questions.push(q.questionText?.slice(0, 100));
+    if (q.difficulty) acc[topic].difficulty.push(q.difficulty);
+    if (q.bloomsLevel?.label) acc[topic].blooms.push(q.bloomsLevel.label);
+    return acc;
+  }, {});
+
+  const prompt = `You are an academic analyst. Based on this exam paper analysis, generate a topic-wise summary.
+
+Topics and their questions:
+${JSON.stringify(topicData, null, 2)}
+
+Overall insights: ${analysisResult?.insights || ""}
+
+Write a clear topic-wise breakdown. For each topic:
+- What concept it tests
+- Cognitive level required
+- How heavily it was tested
+- One key thing students should focus on
+
+Format as natural flowing paragraphs per topic, not bullet points. Be specific and actionable. Maximum 400 words total.`;
+
+  return withRetry(async () => {
+    const response = await groq.chat.completions.create({
+      model: MODEL,
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.5,
+      max_tokens: 600,
+    });
+    return response.choices[0].message.content.trim();
+  });
+};
+
+// ─── GenAI: Predicted Questions ───────────────────────────────────────────────
+const generatePredictedQuestions = async (questions, paper) => {
+  const questionSummaries = questions.map((q) => ({
+    text: q.questionText?.slice(0, 150),
+    topic: q.syllabusMatch?.topic,
+    difficulty: q.difficulty,
+    blooms: q.bloomsLevel?.label,
+  }));
+
+  const prompt = `You are an experienced exam setter. Based on these past exam questions from ${paper.subject || "this subject"} (${paper.year || "recent year"}), predict 5 likely questions for the next exam.
+
+Past questions analyzed:
+${JSON.stringify(questionSummaries, null, 2)}
+
+Generate 5 predicted questions that:
+1. Cover topics not heavily tested this year (gap filling)
+2. Follow similar difficulty and cognitive patterns
+3. Are realistic exam-style questions
+4. Include a mix of difficulty levels
+
+Format as:
+Q1. [question text]
+Topic: [topic] | Difficulty: [easy/medium/hard] | Bloom's: [level]
+Why predicted: [one sentence reason]
+
+Then Q2, Q3, Q4, Q5 in the same format.`;
+
+  return withRetry(async () => {
+    const response = await groq.chat.completions.create({
+      model: MODEL,
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.7,
+      max_tokens: 800,
+    });
+    return response.choices[0].message.content.trim();
+  });
+};
+
+// ─── GenAI: Mnemonics for Hard Questions ──────────────────────────────────────
+const generateMnemonics = async (questions) => {
+  const hardQuestions = questions
+    .filter((q) => q.difficulty === "hard" || q.cognitiveComplexity?.score >= 7)
+    .slice(0, 5);
+
+  if (hardQuestions.length === 0) {
+    return "No hard or high-complexity questions found in this paper. Great news — the paper is manageable!";
+  }
+
+  const prompt = `You are a creative study coach. For each of these difficult exam questions, create a memorable mnemonic, memory trick, or mental model to help students remember the concept.
+
+Hard questions:
+${hardQuestions.map((q, i) => `${i + 1}. ${q.questionText?.slice(0, 200)}`).join("\n")}
+
+For each question provide:
+- A catchy acronym, rhyme, visual story, or analogy
+- One sentence explaining how to use it
+- A key formula or framework if applicable
+
+Be creative, memorable, and student-friendly. Avoid being too academic.`;
+
+  return withRetry(async () => {
+    const response = await groq.chat.completions.create({
+      model: MODEL,
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.8,
+      max_tokens: 700,
+    });
+    return response.choices[0].message.content.trim();
+  });
+};
+
+// ─── GenAI: Study Schedule ────────────────────────────────────────────────────
+const generateStudySchedule = async (questions, analysisResult, examDate, hoursPerDay) => {
+  const today = new Date();
+  const exam = new Date(examDate);
+  const daysLeft = Math.max(1, Math.ceil((exam - today) / (1000 * 60 * 60 * 24)));
+  const totalHours = daysLeft * hoursPerDay;
+
+  const hardCount = questions.filter((q) => q.difficulty === "hard").length;
+  const mediumCount = questions.filter((q) => q.difficulty === "medium").length;
+  const easyCount = questions.filter((q) => q.difficulty === "easy").length;
+  const topics = analysisResult?.topicsCovered || [];
+  const gaps = analysisResult?.topicsNotCovered || [];
+
+  const prompt = `You are an expert academic planner. Create a detailed day-by-day study schedule.
+
+Exam details:
+- Days until exam: ${daysLeft}
+- Study hours per day: ${hoursPerDay}
+- Total available hours: ${totalHours}
+- Subject: ${analysisResult?.subject || "this subject"}
+
+Paper analysis:
+- Hard questions: ${hardCount}
+- Medium questions: ${mediumCount}  
+- Easy questions: ${easyCount}
+- Topics covered in exam: ${topics.slice(0, 10).join(", ")}
+- Syllabus gaps (not tested but in syllabus): ${gaps.slice(0, 5).join(", ") || "none"}
+
+Create a realistic day-by-day schedule that:
+1. Prioritizes hard and complex topics first
+2. Allocates more time to high-cognitive-load topics
+3. Includes revision days before the exam
+4. Covers syllabus gaps
+5. Ends with a full mock practice day
+
+Format as:
+Day 1 (Date): [topics] — [hours] — [focus]
+Day 2 (Date): ...
+...
+
+Keep it practical and motivating. Maximum ${Math.min(daysLeft, 14)} days shown.`;
+
+  return withRetry(async () => {
+    const response = await groq.chat.completions.create({
+      model: MODEL,
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.4,
+      max_tokens: 900,
+    });
+    return response.choices[0].message.content.trim();
+  });
+};
+
+module.exports = {
+  analyzeQuestion,
+  generateSummary,
+  generateTopicSummary,
+  generatePredictedQuestions,
+  generateMnemonics,
+  generateStudySchedule,
+};
