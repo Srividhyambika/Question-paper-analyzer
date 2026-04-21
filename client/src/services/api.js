@@ -27,6 +27,10 @@ export const runAnalysis = (paperId) => api.post(`/analysis/run/${paperId}`);
 export const getAnalysisStatus = (paperId) => api.get(`/analysis/status/${paperId}`);
 export const getResults = (paperId) => api.get(`/analysis/results/${paperId}`);
 export const comparePapers = (ids) => api.get(`/analysis/compare?ids=${ids.join(",")}`);
+export const updateProfile = (data) => api.patch("/auth/profile", data);
+
+export const updateQuestionNotes = (questionId, notes) =>
+  api.patch(`/analysis/question/${questionId}/notes`, { notes });
 
 // Auth
 export const registerUser = (data) => api.post("/auth/register", data);
@@ -40,7 +44,16 @@ export const endVisit = (visitId) => api.post("/admin/visit/end", { visitId });
 // Admin
 export const getAdminStats = () => api.get("/admin/stats");
 
-export const queryAgent = (message, paperId) =>
-  api.post("/agent/query", { message, paperId });
+export const queryAgent = (message, paperId, conversationHistory = []) =>
+  api.post("/agent/query", { message, paperId, conversationHistory });
+
+export const getTopicSummary = (paperId) =>
+  api.post(`/analysis/genai/topic-summary/${paperId}`);
+export const getPredictedQuestions = (paperId) =>
+  api.post(`/analysis/genai/predicted-questions/${paperId}`);
+export const getMnemonics = (paperId) =>
+  api.post(`/analysis/genai/mnemonics/${paperId}`);
+export const getStudySchedule = (paperId, examDate, hoursPerDay) =>
+  api.post(`/analysis/genai/study-schedule/${paperId}`, { examDate, hoursPerDay });
 
 export default api;
