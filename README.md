@@ -63,6 +63,13 @@ An AI-powered exam question paper analyzer built on the MERN stack. Upload a que
 - Suggested starter questions
 - General AI study assistant for questions unrelated to a specific paper
 
+### Generative AI Panel (GenAI)
+- Topic-wise Summary: AI-generated approach guides for every topic identified in the paper.
+- Next Exam Predictions: Predicts likely questions based on identified topic gaps and historical patterns.
+- Memory Tricks & Mnemonics: Generates custom mental models and mnemonics for complex concepts.
+- Personalized Study Schedule: Users input their exam date and available study hours to generate a day-by-day plan.
+- PDF Export: Integrated jsPDF logic allows users to download their personalized study schedules as professionally formatted PDFs.
+
 ### Admin & Analytics
 - Visitor session tracking (start/end timestamps, duration)
 - Admin dashboard: total visits, average time spent, visits per day chart, registered user count
@@ -89,12 +96,12 @@ An AI-powered exam question paper analyzer built on the MERN stack. Upload a que
 
 | Layer | Technology |
 |-------|-----------|
-| Frontend | React 18 + Vite, Tailwind CSS, Recharts, React Query, React Router v6 |
+| Frontend | React 18 + Vite, Tailwind CSS, Recharts, React Query, React Router v6, Lucide React|
 | Backend | Node.js + Express |
 | Database | MongoDB (local via MongoDB Community Server) |
 | LLM | Groq API — Llama 3.3 70B Versatile |
 | Authentication | JWT (jsonwebtoken) + bcryptjs |
-| PDF Parsing | pdf-parse |
+| PDF Tools | pdf-parse (Extraction), jsPDF (Generation/Export) |
 | Rate Limiting | express-rate-limit |
 | PDF Export | jsPDF + html2canvas |
 | Notifications | react-hot-toast |
@@ -111,7 +118,7 @@ exam-analyzer/
 │   │   ├── components/
 │   │   │   ├── ui/                  # Button, Card, Badge, Input, Progress, Tabs, Avatar, Tooltip, Skeleton
 │   │   │   ├── upload/              # UploadZone, UploadProgress
-│   │   │   ├── dashboard/           # SummaryCard, QuestionTable, TopicsCoverage, ExportReport, AnalysisSkeleton
+│   │   │   ├── dashboard/           # SummaryCard, QuestionTable, TopicsCoverage, ExportReport, AnalysisSkeleton, GenAIPanel
 │   │   │   ├── charts/              # BloomsChart, DifficultyChart, ComplexityRadar
 │   │   │   ├── agent/               # AgentChat, FloatingAgent
 │   │   │   ├── Navbar.jsx
