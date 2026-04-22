@@ -1,6 +1,8 @@
 # Exam PYQ Analyzer
 
-An AI-powered exam question paper analyzer built on the MERN stack. Upload a question paper, syllabus, and textbooks — the system extracts and parses all questions, analyzes each one using a large language model, and delivers a comprehensive report covering syllabus coverage, difficulty, Bloom's Taxonomy, and cognitive complexity. An AI agent answers natural language queries about the paper and generates personalized study strategies.
+An AI-powered exam question paper analyzer built on the MERN stack. Upload a question paper, syllabus, and textbooks — the system extracts and parses all questions, analyzes each one using a large language model, and delivers a comprehensive report covering syllabus coverage, difficulty, Bloom's Taxonomy, and cognitive complexity.
+
+The project deliberately demonstrates three distinct AI paradigms within one application: **LLM-based structured classification**, **Generative AI** for open-ended content, and **Agentic AI** for autonomous tool-based reasoning.
 
 ---
 
@@ -10,7 +12,29 @@ An AI-powered exam question paper analyzer built on the MERN stack. Upload a que
 |-------|-------------|--------|
 | Phase 1 | Full Stack — MERN setup, PDF upload & parsing, authentication, React UI | ✅ Complete |
 | Phase 2 | LLM Integration — Groq API, syllabus matching, difficulty & Bloom's analysis | ✅ Complete |
-| Phase 3 | AI Agent — tool-based agent, conversational interface, study strategy generation | ✅ Complete |
+| Phase 3 | AI Agent + GenAI — tool-based agent, generative features, study strategy | ✅ Complete |
+
+---
+
+## AI Feature Classification
+
+This project separates three AI paradigms clearly across the Analysis page tabs:
+
+| Feature | AI Type | Why |
+|---------|---------|-----|
+| Difficulty classification | LLM-Based | Fixed output space (easy/medium/hard), deterministic, temp 0.1 |
+| Bloom's Taxonomy detection | LLM-Based | Fixed 6-level taxonomy, structured JSON, temp 0.1 |
+| Cognitive complexity scoring | LLM-Based | Fixed 1-10 scale with defined categories, temp 0.1 |
+| Syllabus matching | LLM-Based | Binary match with confidence score, temp 0.1 |
+| Out-of-syllabus detection | LLM-Based | Derived from confidence threshold (< 40%) |
+| AI insights paragraph | Generative AI | Open-ended text, different each run, temp 0.4 |
+| Topic-wise summary | Generative AI | Novel narrative synthesis across topics, temp 0.5 |
+| Predicted exam questions | Generative AI | Creative generation based on gap patterns, temp 0.7 |
+| Memory mnemonics | Generative AI | Highest creativity, unique each run, temp 0.8 |
+| Study schedule | Generative AI | Personalised to user inputs, adaptive, temp 0.4 |
+| Agent intent detection | Agentic AI | Model autonomously selects tool, temp 0.1 |
+| Agent response generation | Agentic AI | Two-step: tool execution then language generation |
+| Conversational memory | Agentic AI | Context maintained across turns in session |
 
 ---
 
@@ -21,47 +45,30 @@ An AI-powered exam question paper analyzer built on the MERN stack. Upload a que
 - Automatically extracts and segments individual questions and sub-questions (Q1a, Q1b, Q1c)
 - Parses syllabus into structured units and topic lists
 - Chunks textbook content into 500-word passages for RAG
-- Runs every question through the Groq LLM in a single structured prompt
+- Runs every question through Groq LLM in a single structured prompt
 - Stores all results in MongoDB and displays them in an interactive dashboard
+- Automatically deletes uploaded PDFs after analysis — only extracted text retained
 
-### Per-Question Analysis
+### LLM-Based Analysis (Charts Tab)
 - Syllabus matching with confidence score (0–100%)
-- Out-of-syllabus detection (flagged when confidence < 40%)
-- Difficulty classification: Easy / Medium / Hard
-- Bloom's Taxonomy level detection: L1 Remember → L6 Create
-- Cognitive complexity score (1–10) with thinking type classification
-- AI reasoning justification per question
+- Out-of-syllabus detection when confidence < 40%
+- Difficulty: Easy / Medium / Hard
+- Bloom's Taxonomy: L1 Remember → L6 Create
+- Cognitive complexity score (1–10) with thinking type and reasoning
+- Bloom's pie chart, difficulty bar chart, cognitive complexity radar chart
 
-### Dashboard & Visualisation
-- Summary cards: total questions, syllabus coverage %, out-of-syllabus count, difficulty score
-- Bloom's Taxonomy pie chart
-- Difficulty distribution bar chart
-- Cognitive complexity radar chart
-- Topics covered vs not covered breakdown with AI insights paragraph
-- Expandable question cards with complexity bars, search, filter by difficulty and Bloom's level
-- Notes field on each question (saved to MongoDB)
-- PDF export with preview modal and download
-- Print-friendly layout
+### Generative AI Features (AI Insights Tab)
+- **Topic-wise Summary** — narrative breakdown of what each topic tests
+- **Predicted Exam Questions** — 5 AI-predicted questions based on gap analysis and patterns
+- **Memory Mnemonics** — custom memory tricks and mental models for hard questions
+- **Study Schedule** — personalised day-by-day plan based on exam date and available hours
 
-### Authentication & Security
-- JWT-based authentication with 7-day token expiry
-- Role-based access control — Student and Admin roles
-- Passwords hashed with bcrypt (12 salt rounds) — invisible in MongoDB
-- Password strength meter: Weak / Medium / Strong with live rule checklist
-- Regex validation: uppercase, lowercase, number, special character, minimum length
-- Password cannot match username or date of birth
-- Copy-paste disabled on all password fields
-- Rate limiting: 100 requests per 15 minutes globally, 10 on auth routes
-- Input sanitization to strip prompt injection attempts before LLM processing
-- Auto-delete uploaded PDFs after analysis — only extracted text kept in DB
-
-### AI Agent (Phase 3)
-- Tool-based intent detection — LLM decides which tool to call based on the query
-- 7 tools: get questions by difficulty, syllabus gaps, Bloom's breakdown, out-of-syllabus questions, paper summary, study plan generation, paper comparison
+### Agentic AI (Agent Tab)
+- Tool-based intent detection — LLM picks the right tool automatically
+- 7 tools: difficulty filter, syllabus gaps, Bloom's breakdown, out-of-syllabus, paper summary, study plan, paper comparison
 - Conversational memory across messages within a session
-- Floating global AI assistant available on every page
-- Suggested starter questions
-- General AI study assistant for questions unrelated to a specific paper
+- Tool label shown above each response
+- Floating global AI assistant available on every page (general study help)
 
 ### Generative AI Panel (GenAI)
 - Topic-wise Summary: AI-generated approach guides for every topic identified in the paper.
@@ -70,25 +77,39 @@ An AI-powered exam question paper analyzer built on the MERN stack. Upload a que
 - Personalized Study Schedule: Users input their exam date and available study hours to generate a day-by-day plan.
 - PDF Export: Integrated jsPDF logic allows users to download their personalized study schedules as professionally formatted PDFs.
 
+### Authentication & Security
+- JWT-based authentication with 7-day token expiry
+- Role-based access: Student and Admin
+- Passwords hashed with bcrypt (12 salt rounds) — invisible in MongoDB
+- Password strength meter: Weak / Medium / Strong with live rule checklist
+- Regex validation: uppercase, lowercase, number, special character, minimum 8 characters
+- Password cannot match username or date of birth (multiple format checks)
+- Copy-paste disabled on password fields
+- Rate limiting: 100 requests/15 min globally, 10/15 min on auth routes
+- Input sanitization strips prompt injection attempts before LLM processing
+
 ### Admin & Analytics
-- Visitor session tracking (start/end timestamps, duration)
-- Admin dashboard: total visits, average time spent, visits per day chart, registered user count
-- Stats refresh every 30 seconds
+- Visitor session tracking (start/end, duration)
+- Admin dashboard: total visits, average time spent, visits per day chart, user count
+- Stats auto-refresh every 30 seconds
 
 ### Profile & Personalisation
-- Profile page with SVG character avatars: Kung Fu Panda, Monkey King, Ninja Turtle, Spider-Man, Batman
-- Initials fallback with consistent color per username if no avatar selected
+- SVG character avatars: Kung Fu Panda, Monkey King, Ninja Turtle, Spider-Man, Batman
+- Initials fallback with consistent color per username
 - Username update with duplicate check
-- Avatar persists across sessions and devices
+- Avatar persists across sessions
 
 ### UI & Experience
-- Animated landing page with scroll-triggered animations, animated stat counters, how-it-works section, sample analysis cards, FAQ accordion
+- Animated landing page: scroll animations, stat counters, how-it-works, sample cards, FAQ
 - Neon dark mode with deep background and glowing card/button effects
-- Light/dark mode toggle with localStorage persistence
+- Light/dark toggle with localStorage persistence — no flash on reload
 - Toast notifications for all key actions
 - Loading skeleton on analysis page
+- Expandable question cards with complexity bars, search, filter
+- Notes field per question (saved to MongoDB)
+- PDF export with preview modal and download
+- Print-friendly layout (always renders in light mode)
 - Custom 404 and 500 error pages
-- Split-panel login and register pages with illustration and tagline
 
 ---
 
@@ -96,12 +117,12 @@ An AI-powered exam question paper analyzer built on the MERN stack. Upload a que
 
 | Layer | Technology |
 |-------|-----------|
-| Frontend | React 18 + Vite, Tailwind CSS, Recharts, React Query, React Router v6, Lucide React|
+| Frontend | React 18 + Vite, Tailwind CSS v3, Recharts, React Query, React Router v6 |
 | Backend | Node.js + Express |
 | Database | MongoDB (local via MongoDB Community Server) |
-| LLM | Groq API — Llama 3.3 70B Versatile |
+| LLM | Groq API — Llama 3.3 70B Versatile (only external service) |
 | Authentication | JWT (jsonwebtoken) + bcryptjs |
-| PDF Tools | pdf-parse (Extraction), jsPDF (Generation/Export) |
+| PDF Parsing | pdf-parse |
 | Rate Limiting | express-rate-limit |
 | PDF Export | jsPDF + html2canvas |
 | Notifications | react-hot-toast |
@@ -116,19 +137,21 @@ exam-analyzer/
 ├── client/                          # React frontend
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── ui/                  # Button, Card, Badge, Input, Progress, Tabs, Avatar, Tooltip, Skeleton
+│   │   │   ├── ui/                  # Button, Card, Badge, Input, Progress,
+│   │   │   │                        # Tabs, Avatar, Tooltip, Skeleton
 │   │   │   ├── upload/              # UploadZone, UploadProgress
-│   │   │   ├── dashboard/           # SummaryCard, QuestionTable, TopicsCoverage, ExportReport, AnalysisSkeleton, GenAIPanel
+│   │   │   ├── dashboard/           # SummaryCard, QuestionTable, TopicsCoverage,
+│   │   │   │                        # ExportReport, AnalysisSkeleton, GenAIPanel
 │   │   │   ├── charts/              # BloomsChart, DifficultyChart, ComplexityRadar
 │   │   │   ├── agent/               # AgentChat, FloatingAgent
 │   │   │   ├── Navbar.jsx
 │   │   │   └── ProtectedRoute.jsx
 │   │   ├── pages/
 │   │   │   ├── Landing.jsx          # Animated public landing page
-│   │   │   ├── Login.jsx
-│   │   │   ├── Register.jsx
-│   │   │   ├── Home.jsx             # Upload page
-│   │   │   ├── Analysis.jsx         # Results dashboard
+│   │   │   ├── Login.jsx            # Split-panel with illustration
+│   │   │   ├── Register.jsx         # Split-panel with live password meter
+│   │   │   ├── Home.jsx             # PDF upload page
+│   │   │   ├── Analysis.jsx         # Results dashboard (LLM / GenAI / Agent tabs)
 │   │   │   ├── History.jsx
 │   │   │   ├── Compare.jsx
 │   │   │   ├── Profile.jsx          # Avatar picker + username update
@@ -141,7 +164,7 @@ exam-analyzer/
 │   │   │   ├── themeContext.jsx
 │   │   │   └── useTheme.js
 │   │   ├── services/
-│   │   │   └── api.js
+│   │   │   └── api.js               # All Axios calls
 │   │   └── lib/
 │   │       └── utils.js
 │   └── package.json
@@ -162,22 +185,22 @@ exam-analyzer/
     │   └── validateUpload.js
     ├── models/
     │   ├── Paper.js
-    │   ├── Question.js              # includes notes field
+    │   ├── Question.js              # notes field included
     │   ├── Syllabus.js
     │   ├── Textbook.js
     │   ├── AnalysisResult.js
-    │   ├── User.js                  # includes avatar field
+    │   ├── User.js                  # avatar field included
     │   └── VisitorLog.js
     ├── routes/
     │   ├── uploadRoutes.js
-    │   ├── analysisRoutes.js        # includes PATCH /question/:id/notes
-    │   ├── authRoutes.js            # includes PATCH /profile
+    │   ├── analysisRoutes.js        # includes GenAI endpoints + notes PATCH
+    │   ├── authRoutes.js            # includes profile PATCH
     │   ├── adminRoutes.js
-    │   └── agentRoutes.js           # includes POST /chat
+    │   └── agentRoutes.js           # includes /chat endpoint
     ├── services/
-    │   ├── pdfService.js
-    │   ├── geminiService.js         # Groq API integration
-    │   └── agentService.js          # Tool-based agent
+    │   ├── pdfService.js            # parsing + auto-delete
+    │   ├── geminiService.js         # LLM + GenAI via Groq
+    │   └── agentService.js          # tool-based agent
     └── utils/
         ├── passwordUtils.js
         └── sanitize.js
@@ -190,8 +213,8 @@ exam-analyzer/
 ### Prerequisites
 - Node.js v18+
 - MongoDB Community Server running locally on port 27017
-- MongoDB Compass (optional, for visual DB inspection)
 - Groq API key (free at console.groq.com)
+- MongoDB Compass (optional)
 
 ### 1. Start MongoDB
 ```bash
@@ -200,62 +223,101 @@ mongod --dbpath ~/data/db
 ```
 Keep this terminal open.
 
-### 2. Start the backend
+### 2. Backend
 ```bash
 cd server
 npm install
 npm run dev
 ```
-Server runs on `http://localhost:5001`
+Runs on `http://localhost:5001`
 
-### 3. Start the frontend
+### 3. Frontend
 ```bash
 cd client
 npm install
 npm run dev
 ```
-Frontend runs on `http://localhost:5173`
+Runs on `http://localhost:5173`
 
 ---
+
 
 ## API Endpoints
 
 ### Auth
 | Method | Endpoint | Access | Description |
 |--------|----------|--------|-------------|
-| POST | `/api/auth/register` | Public | Create account |
-| POST | `/api/auth/login` | Public | Login |
-| GET | `/api/auth/me` | Protected | Get current user |
+| POST | `/api/auth/register` | Public | Register with password validation |
+| POST | `/api/auth/login` | Public | Login, returns JWT + avatar |
+| GET | `/api/auth/me` | Protected | Get current user profile |
 | PATCH | `/api/auth/profile` | Protected | Update username and avatar |
 
 ### Upload
 | Method | Endpoint | Access | Description |
 |--------|----------|--------|-------------|
-| POST | `/api/upload` | Protected | Upload question paper + syllabus + textbooks |
-| GET | `/api/upload/history` | Protected | Get all past uploads |
+| POST | `/api/upload` | Protected | Upload 3 PDFs, parse, store |
+| GET | `/api/upload/history` | Protected | All past uploads |
 | DELETE | `/api/upload/:id` | Protected | Delete paper and all related data |
 
-### Analysis
+### Analysis — LLM
 | Method | Endpoint | Access | Description |
 |--------|----------|--------|-------------|
-| POST | `/api/analysis/run/:paperId` | Protected | Trigger LLM analysis |
-| GET | `/api/analysis/status/:paperId` | Protected | Get processing status |
-| GET | `/api/analysis/results/:paperId` | Protected | Get full results |
+| POST | `/api/analysis/run/:paperId` | Protected | Trigger async LLM analysis |
+| GET | `/api/analysis/status/:paperId` | Protected | Poll processing status |
+| GET | `/api/analysis/results/:paperId` | Protected | Full results |
 | GET | `/api/analysis/compare?ids=id1,id2` | Protected | Compare two papers |
-| PATCH | `/api/analysis/question/:id/notes` | Protected | Save notes to a question |
+| PATCH | `/api/analysis/question/:id/notes` | Protected | Save question notes |
+
+### Analysis — Generative AI
+| Method | Endpoint | Access | Description |
+|--------|----------|--------|-------------|
+| POST | `/api/analysis/genai/topic-summary/:paperId` | Protected | Generate topic-wise summary |
+| POST | `/api/analysis/genai/predicted-questions/:paperId` | Protected | Generate predicted questions |
+| POST | `/api/analysis/genai/mnemonics/:paperId` | Protected | Generate memory tricks |
+| POST | `/api/analysis/genai/study-schedule/:paperId` | Protected | Generate study schedule |
 
 ### Agent
 | Method | Endpoint | Access | Description |
 |--------|----------|--------|-------------|
-| POST | `/api/agent/query` | Protected | Query agent about a specific paper |
-| POST | `/api/agent/chat` | Protected | General AI study assistant chat |
+| POST | `/api/agent/query` | Protected | Query agent about a paper |
+| POST | `/api/agent/chat` | Protected | General AI study assistant |
 
 ### Admin
 | Method | Endpoint | Access | Description |
 |--------|----------|--------|-------------|
 | GET | `/api/admin/stats` | Admin only | Visitor analytics |
-| POST | `/api/admin/visit/start` | Public | Start session tracking |
-| POST | `/api/admin/visit/end` | Public | End session and record duration |
+| POST | `/api/admin/visit/start` | Public | Log session start |
+| POST | `/api/admin/visit/end` | Public | Log session end + duration |
+
+---
+
+## Agent Tools
+
+| Tool | Trigger Examples | Returns |
+|------|-----------------|---------|
+| `get_questions_by_difficulty` | "Show hard questions", "Filter by complexity > 7" | Filtered question list |
+| `get_syllabus_gaps` | "Which topics are missing?", "Show coverage gaps" | topicsCovered, topicsNotCovered |
+| `get_blooms_breakdown` | "Show Bloom's distribution", "How many apply-level questions?" | Distribution + questions by level |
+| `get_out_of_syllabus` | "Any out-of-syllabus questions?" | Count + question details |
+| `get_paper_summary` | "Overall difficulty?", "Summarize this paper" | All stats + insights |
+| `generate_study_plan` | "Create a study plan", "What should I focus on?" | Priority topics + strategy |
+| `compare_papers` | "Compare with 2023", "Year-over-year comparison" | Both papers' stats side by side |
+
+---
+
+## Password Rules
+
+| Rule | Check |
+|------|-------|
+| Minimum 8 characters | `password.length >= 8` |
+| Uppercase letter | `/[A-Z]/` |
+| Lowercase letter | `/[a-z]/` |
+| Number | `/[0-9]/` |
+| Special character | `/[!@#$%^&*()_+...]/ ` |
+| Not matching username | `password.toLowerCase() !== username.toLowerCase()` |
+| Not containing DOB | Checked against YYYY-MM-DD, YYYYMMDD, DDMMYYYY, MMDD formats |
+
+Strength: score ≤ 3 → Weak / 4–5 → Medium / 6–7 → Strong
 
 ---
 
@@ -263,136 +325,57 @@ Frontend runs on `http://localhost:5173`
 
 ```
 users              — credentials (hashed), role, DOB, avatar
-visitorlogs        — session start/end, duration per visit
-papers             — upload metadata, PDF paths, processing status
-syllabuses         — structured units and topic lists
-textbooks          — chunked content (500 words/chunk) for RAG
-questions          — one document per sub-question with full LLM analysis + notes
-analysisresults    — aggregated distributions, insights, topic coverage
+visitorlogs        — session start/end/duration
+papers             — upload metadata, async pipeline status
+syllabuses         — structured units and flat topic list
+textbooks          — 500-word chunks with overlap (RAG-ready)
+questions          — full LLM analysis per sub-question + user notes
+analysisresults    — pre-aggregated chart data + AI insights
 ```
 
 ---
 
-## Password Rules
+## Major Challenges & Resolutions
 
-| Rule | Requirement |
-|------|-------------|
-| Length | Minimum 8 characters |
-| Uppercase | At least one (A-Z) |
-| Lowercase | At least one (a-z) |
-| Number | At least one (0-9) |
-| Special character | At least one (!@#$%^&* etc.) |
-| Username | Must not match username |
-| Date of birth | Must not contain DOB in any format |
-
-Strength: Weak (≤3) / Medium (4–5) / Strong (6–7)
-
----
-
-## PDF Parsing Notes
-
-- Supports formats: `Q.01`, `Q1`, `Q1.`, `Q 1`, `Question 1`, `1.`, `1)`
-- Zero-padded numbers (`Q01`, `Q02`) handled correctly
-- Sub-questions (`a`, `b`, `c`) split into separate documents
-- Instruction lines ("Answer any FIVE...") filtered out automatically
-- Tables flattened to text — handled gracefully by LLM
-- Fallback: if segmentation fails, full text stored as single block
-
----
-
-## Agent Tools
-
-| Tool | Description |
-|------|-------------|
-| `get_questions_by_difficulty` | Filter questions by easy/medium/hard or complexity score range |
-| `get_syllabus_gaps` | Find syllabus topics not covered in the paper |
-| `get_blooms_breakdown` | Distribution of Bloom's levels across all questions |
-| `get_out_of_syllabus` | All questions flagged as outside the syllabus |
-| `get_paper_summary` | Overall stats, distributions, and insights |
-| `generate_study_plan` | Personalized study strategy based on analysis |
-| `compare_papers` | Side-by-side comparison with another uploaded paper |
-
----
-
-## Major Challenges & How They Were Resolved
-
-### 1. Gemini API Free Tier Quota
-**Problem:** Google Gemini API returned 429 errors with `limit: 0` — the free tier quota for `gemini-2.0-flash` was unavailable on the project's Google account.
-
-**Resolution:** Switched to Groq API which offers a genuinely generous free tier with no daily limits and faster inference. The switch required only changing the SDK and model name — no prompt changes needed. Groq's `llama-3.3-70b-versatile` model performs comparably for structured JSON output tasks.
-
----
+### 1. Gemini API Quota — Switched to Groq
+The Google Gemini API returned 429 errors with `limit: 0` on the free tier for `gemini-2.0-flash`. Resolved by switching to Groq API (Llama 3.3 70B) which offers a generous free tier with no daily limits and faster inference. Only the SDK and model name needed changing.
 
 ### 2. PDF Parsing Inconsistencies
-**Problem:** `pdf-parse` extracts raw text without structure. Question papers use wildly different numbering formats (`Q.01`, `Q1.`, `1)`, `Question 1:`). Tables are flattened to meaningless text. Instruction lines like "Answer any FIVE full questions" were being picked up as questions.
-
-**Resolution:** Built a multi-strategy regex parser with three fallback patterns. Added a `skipPhrases` filter to reject instruction lines. Implemented sub-question detection (`a`, `b`, `c` parts) as separate documents. Added a final fallback that stores the full text as a single block rather than crashing. Table noise is tolerated since the LLM handles noisy text well.
-
----
+`pdf-parse` extracts unstructured raw text. Question papers use many numbering formats; tables are flattened; instruction lines were being picked up as questions. Resolved with a multi-strategy regex parser (3 fallback patterns), a `skipPhrases` filter, sub-question detection for a/b/c parts, and a full-text fallback to prevent crashes.
 
 ### 3. HTTP Timeout on Large Papers
-**Problem:** Analyzing 42 questions sequentially with 1-second delays between LLM calls takes 3–5 minutes. Express routes time out long before that, causing the frontend to show errors even when analysis was actually completing in the background.
-
-**Resolution:** Changed `runAnalysis` to respond immediately with a 200 and then continue processing asynchronously in a background function. The frontend polls `/api/analysis/status/:paperId` every 3 seconds and navigates to results only when status becomes `completed`.
-
----
+Analyzing 42 questions sequentially takes 3–5 minutes — far beyond Express timeout. Resolved by responding with HTTP 200 immediately and running analysis in a background async function. Frontend polls `/status` every 3 seconds and navigates only on completion.
 
 ### 4. ESM vs CommonJS Conflicts
-**Problem:** Vite scaffolds React projects as ES Modules (`"type": "module"` in package.json). Tailwind v4 auto-installed via `npx tailwindcss init` conflicted with shadcn/ui's validator which expected CommonJS config. The shadcn CLI consistently failed with "No Tailwind CSS configuration found" despite the file existing.
+Vite scaffolds projects as ES Modules but shadcn CLI expected CommonJS Tailwind config. Resolved by forcing Tailwind v3, and building all UI components (Button, Card, Badge, etc.) manually — bypassing the shadcn CLI entirely.
 
-**Resolution:** Forced Tailwind v3 (`tailwindcss@3.4.19`), converted config to CommonJS (`.cjs` extension), and ultimately bypassed the shadcn CLI entirely — built all UI components (Button, Card, Badge, Input, Progress, Tabs) manually from scratch. This gave full control over the component code and avoided the CLI dependency entirely.
-
----
-
-### 5. Git Merge Conflicts from Concurrent Editing
-**Problem:** Teammate edited files directly on GitHub while local development continued simultaneously. Every `git pull` resulted in 30+ merge conflicts across all files. Rebase made it worse by stacking conflicts across multiple commits.
-
-**Resolution:** Used `git push --force` to establish the local version as the source of truth. Established a workflow rule: teammate only edits documentation on GitHub directly, all code changes go through local → push. Set up separate git user configs on the same laptop so commits show on each contributor's profile independently.
-
----
+### 5. Git Merge Conflicts
+Teammate editing files directly on GitHub caused 30+ conflicts on every pull. Resolved with `git push --force` to establish local as source of truth, and a rule: code changes through local → push only, documentation edits only on GitHub.
 
 ### 6. LLM JSON Parsing Failures
-**Problem:** Groq occasionally wraps JSON responses in markdown code fences (` ```json ... ``` `) or adds explanatory text before the JSON object, causing `JSON.parse()` to throw and the entire analysis run to fail.
+Groq occasionally wraps JSON in markdown fences or adds preamble text. Resolved with a `cleanJSON()` helper that strips fences before parsing, and a `withRetry()` wrapper that handles 429 errors with a 15-second wait and up to 3 retries.
 
-**Resolution:** Added a `cleanJSON()` helper that strips markdown fences before parsing. Wrapped every LLM call in a `withRetry()` function that catches 429 rate limit errors and waits 15 seconds before retrying up to 3 times. Individual question failures are caught and saved without analysis rather than crashing the entire pipeline.
-
----
-
-### 7. MongoDB `module.exports` Missing
-**Problem:** After adding the `notes` field to `Question.js`, the file was accidentally saved without the `module.exports = mongoose.model(...)` line at the bottom, causing `Question.find is not a function` errors across all routes that used the model.
-
-**Resolution:** Identified via the error stack trace pointing to `analysisController.js`. Added the missing export line. Established a checklist: every new model file must end with `module.exports = mongoose.model("ModelName", schema)`.
-
----
+### 7. Missing `module.exports` in Question Model
+After adding the `notes` field, the file was saved without `module.exports = mongoose.model(...)`, causing `Question.find is not a function` across all routes. Identified via stack trace, resolved by adding the missing export line.
 
 ### 8. Dark Mode White Flash and Partial Coverage
-**Problem:** On page reload, the app briefly shows white before React loads and applies the dark class, causing a flash. Some pages (Login, Register) rendered outside the main app layout and didn't pick up the dark background. Hardcoded `text-slate-800` classes were invisible on dark backgrounds.
-
-**Resolution:** Added an inline script to `index.html` that reads `localStorage` and applies the `dark` class to `html` before React loads, eliminating the flash. Fixed standalone pages by explicitly adding `dark:bg-[hsl(230_25%_6%)]` to their outermost divs. Audited all components for hardcoded slate colors and added `dark:text-white` / `dark:text-slate-300` variants throughout.
-
----
+Page reload briefly showed white before React applied the dark class. Standalone pages (Login, Register) didn't inherit the dark background. Resolved by adding an inline script to `index.html` that reads localStorage and applies the dark class before React loads, and explicitly adding `dark:bg-[hsl(...)]` to standalone page wrappers.
 
 ### 9. Avatar Not Persisting After Logout
-**Problem:** Profile avatar saved to MongoDB correctly but was lost after logout and re-login. The login response didn't include the `avatar` field, so the auth context received an incomplete user object and defaulted to null avatar.
+Avatar was saved to MongoDB but lost on re-login because the login response didn't include `avatar`. Resolved by updating both login and register responses in `authController.js` to include the full user profile including avatar.
 
-**Resolution:** Updated both the login and register responses in `authController.js` to include `avatar` in the user object. Updated `getMe` to also return `avatar`. This ensures the complete user profile is available immediately after login without requiring a page reload.
-
----
-
-### 10. Rate Limit on Groq During Analysis
-**Problem:** Sending 42 LLM requests back-to-back hit Groq's per-minute rate limit partway through analysis, causing failures for later questions in the paper.
-
-**Resolution:** Added a 1-second delay between each question's LLM call using `setTimeout`. Combined with the `withRetry()` function that waits 15 seconds on 429 errors, this keeps the request rate within Groq's free tier limits while still completing a full paper analysis in 3–5 minutes.
+### 10. Rate Limiting on Groq During Analysis
+Sending 42 LLM requests back-to-back hit Groq's per-minute limit mid-analysis. Resolved by adding a 1-second delay between question calls combined with the `withRetry()` function, keeping requests within free tier limits while completing a full paper in under 5 minutes.
 
 ---
 
-## Upcoming / Future Scope
+## Future Scope
 
 - Deploy frontend to Vercel, backend to Render, database to MongoDB Atlas
-- MongoDB Atlas Vector Search for textbook RAG — find relevant textbook passages per question
-- OCR support for scanned or image-based PDFs
+- MongoDB Atlas Vector Search for true textbook RAG with chapter/page references
+- OCR support for scanned or image-based PDFs (Tesseract.js)
+- Multi-year trend analysis across 5+ papers
 - Email notifications when analysis completes
-- Year-over-year trend analysis across multiple papers
-- Support for MCQ and numerical question formats
-- Teacher dashboard for managing standardized syllabi
-- Mobile app using React Native
+- React Native mobile app
+- Teacher dashboard for institutional syllabus management
+- Export analysis to LMS platforms (Moodle, Google Classroom)
