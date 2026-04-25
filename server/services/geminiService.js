@@ -175,6 +175,7 @@ Be concise and practical. No markdown.
 
 // ─── GenAI: Topic-wise Summary ────────────────────────────────────────────────
 const generateTopicSummary = async (questions, analysisResult) => {
+  console.log("generateTopicSummary called, questions:", questions.length);
   const topicData = questions.reduce((acc, q) => {
     const topic = q.syllabusMatch?.topic || "General";
     if (!acc[topic]) acc[topic] = { questions: [], difficulty: [], blooms: [] };
