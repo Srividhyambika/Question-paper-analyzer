@@ -4,7 +4,7 @@ const { runAnalysis, getStatus, getResults, comparePapers } = require("../contro
 const Question = require("../models/Question");
 const { protect } = require("../middleware/authMiddleware");
 const Paper = require("../models/Paper");
-
+const AnalysisResult = require("../models/AnalysisResult");
 const {
   generateTopicSummary,
   generatePredictedQuestions,
@@ -15,14 +15,19 @@ const {
 // GenAI endpoints
 router.post("/genai/topic-summary/:paperId", protect, async (req, res, next) => {
   try {
+    console.log("topic-summary hit for", req.params.paperId);
     const { paperId } = req.params;
     const [questions, analysisResult] = await Promise.all([
       Question.find({ paperId }),
       AnalysisResult.findOne({ paperId }),
     ]);
+    console.log("questions found:", questions.length);
     const summary = await generateTopicSummary(questions, analysisResult);
     res.json({ summary });
-  } catch (err) { next(err); }
+  } catch (err) {
+    console.error("topic-summary error:", err.message);
+    next(err);
+  }
 });
 
 router.post("/genai/predicted-questions/:paperId", protect, async (req, res, next) => {
