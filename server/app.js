@@ -16,9 +16,26 @@ const app = express();
 
 // --- Middleware ---
 app.use(cors({
-  origin: process.env.NODE_ENV === "production"
-    ? process.env.CLIENT_URL
-    : "http://localhost:5173",
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, curl)
+    if (!origin) return callback(null, true);
+
+    const allowedOrigins = [
+      "http://localhost:5173",
+      "https://question-paper-analyzer-nine.vercel.app",
+    ];
+
+    // Allow any Vercel preview deployment for this project
+    const isVercelPreview = origin.match(
+      /https:\/\/question-paper-analyzer-.*\.vercel\.app/
+    );
+
+    if (allowedOrigins.includes(origin) || isVercelPreview) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true,
 }));
 
