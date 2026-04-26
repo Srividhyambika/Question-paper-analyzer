@@ -16,8 +16,10 @@ const app = express();
 
 // --- Middleware ---
 app.use(cors({
-  origin: "*",
-  credentials: false,
+  origin: process.env.NODE_ENV === "production"
+    ? process.env.CLIENT_URL
+    : "http://localhost:5173",
+  credentials: true,
 }));
 
 const rateLimit = require("express-rate-limit");
