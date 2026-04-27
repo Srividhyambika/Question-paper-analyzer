@@ -16,22 +16,8 @@ const app = express();
 
 // --- Middleware ---
 app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true);
-
-    // Allow localhost dev
-    if (origin.startsWith("http://localhost")) {
-      return callback(null, true);
-    }
-
-    // Allow ANY vercel.app subdomain for this project
-    if (origin.endsWith(".vercel.app")) {
-      return callback(null, true);
-    }
-
-    callback(new Error("Not allowed by CORS"));
-  },
-  credentials: true,
+  origin: "*",
+  credentials: false,
 }));
 
 const rateLimit = require("express-rate-limit");
